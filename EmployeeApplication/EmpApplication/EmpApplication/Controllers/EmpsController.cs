@@ -18,7 +18,7 @@ namespace EmpApplication.Controllers
         public ActionResult Index(string search = null, string sortField = "Name",
             string sortOrder = "asc",
             int page = 1,
-            int pageSize = 10)
+            int pageSize = 3)
         {
             EmpDBContext context = new EmpDBContext();
             List<Employee> employeeList = new List<Employee>();
@@ -48,5 +48,34 @@ namespace EmpApplication.Controllers
             }
             return View(employeeList);
         }
+
+        public ActionResult Create(Employee employee)
+        {
+            if(employee == null)
+            {
+                employee = new Employee();
+            }
+            else
+            {
+                if (ModelState.IsValid)
+                {
+                    using (var client = new HttpClient())
+                    {
+                        client.BaseAddress = new Uri(BaseAddress);
+                        var responseTask = client.PostAsJsonAsync("api/Employees?employee=" , employee);
+                        responseTask.Wait();
+
+                        var result = responseTask.Result;
+                        if (result.IsSuccessStatusCode)
+                        {
+                            return View("Index", new Employee());
+                        }
+
+                    }
+                }
+            }
+            return View(employee);
+        }
+
     }
 }
